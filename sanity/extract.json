@@ -840,7 +840,7 @@
       "id": {
         "type": "objectAttribute",
         "value": {
-          "type": "number"
+          "type": "string"
         },
         "optional": true
       },
@@ -866,13 +866,6 @@
         "optional": true
       },
       "image": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
-      },
-      "bio": {
         "type": "objectAttribute",
         "value": {
           "type": "string"

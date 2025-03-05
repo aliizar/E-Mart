@@ -1,11 +1,14 @@
 "use client";
-import React, { useActionState, useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { createProduct } from "@/lib/action";
-import { useRouter } from "next/navigation"; // ✅ Correct import for App Router
+import React, { useState, useActionState, useRef, useEffect } from "react";
 import { formSchema } from "@/lib/Validation";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+import { createProduct } from "@/lib/action";
+import gsap from "gsap";
+import { toast } from "react-hot-toast";
 
-const Page = () => {
+const StartupForm = () => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
   const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -26,22 +29,36 @@ const Page = () => {
         title: formData.get("title") as string,
         description: formData.get("description") as string,
         category: formData.get("category") as string,
-        image: formData.get("image") as string, // ✅ Corrected key
-        price: formData.get("price") as string, // ✅ Corrected key
+        link: formData.get("link") as string,
+        price: formData.get("price") as string,
       };
 
       await formSchema.parseAsync(formValues);
+
       const result = await createProduct(prevState, formData);
 
       if (result.status === "SUCCESS") {
-        router.push("/");
+        toast.success("Product uploaded successfully!");
+        router.push(`/`);
+      } else {
+        toast.error(result.error || "Failed to upload product");
       }
 
       return result;
     } catch (error) {
-      console.log(error);
-      
-      return { ...prevState, error: "Validation failed", status: "ERROR" };
+      if (error instanceof z.ZodError) {
+        const fieldErrors = error.flatten().fieldErrors;
+        setErrors(fieldErrors as unknown as Record<string, string>);
+        toast.error("Validation failed. Please check your inputs.");
+        return { ...prevState, error: "Validation failed", status: "ERROR" };
+      }
+
+      toast.error(`An unexpected error occurred ${error}`);
+      return {
+        ...prevState,
+        error: "An unexpected error occurred",
+        status: "ERROR",
+      };
     }
   };
 
@@ -57,18 +74,57 @@ const Page = () => {
           Submit Your Product Details
         </h2>
 
-        {["title", "description", "category", "image", "price"].map((field) => (
-          <div key={field} className="relative mb-8">
-            <input
-              id={field}
-              name={field}
-              type="text"
-              className="w-full bg-black border border-gray-600 text-white p-5 text-lg focus:outline-none focus:ring-2 focus:ring-gray-600 peer transition-all duration-300"
-              required
-              placeholder={`Enter Product ${field}`}
-            />
-          </div>
-        ))}
+        <div className="relative mb-8">
+          <input
+            id="title"
+            name="title"
+            type="text"
+            className="w-full mb-2 bg-black border border-gray-600 text-white p-5 text-lg focus:outline-none focus:ring-2 focus:ring-gray-600 peer transition-all duration-300"
+            required
+            placeholder="Enter Product Title"
+          />
+          {errors.title && <p className="text-red-500">{errors.title}</p>}
+
+          <input
+            id="description"
+            name="description"
+            type="text"
+            className="w-full mb-2 bg-black border border-gray-600 text-white p-5 text-lg focus:outline-none focus:ring-2 focus:ring-gray-600 peer transition-all duration-300"
+            required
+            placeholder="Enter Product Description"
+          />
+          {errors.description && <p className="text-red-500">{errors.description}</p>}
+
+          <input
+            id="category"
+            name="category"
+            type="text"
+            className="w-full mb-2 bg-black border border-gray-600 text-white p-5 text-lg focus:outline-none focus:ring-2 focus:ring-gray-600 peer transition-all duration-300"
+            required
+            placeholder="Enter Product Category"
+          />
+          {errors.category && <p className="text-red-500">{errors.category}</p>}
+
+          <input
+            id="link"
+            name="link"
+            type="text"
+            className="w-full mb-2 bg-black border border-gray-600 text-white p-5 text-lg focus:outline-none focus:ring-2 focus:ring-gray-600 peer transition-all duration-300"
+            required
+            placeholder="Enter Product Image Link"
+          />
+          {errors.link && <p className="text-red-500">{errors.link}</p>}
+
+          <input
+            id="price"
+            name="price"
+            type="text"
+            className="w-full mb-2 bg-black border border-gray-600 text-white p-5 text-lg focus:outline-none focus:ring-2 focus:ring-gray-600 peer transition-all duration-300"
+            required
+            placeholder="Enter Product Price"
+          />
+          {errors.price && <p className="text-red-500">{errors.price}</p>}
+        </div>
 
         <div className="text-center">
           <button
@@ -88,4 +144,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default StartupForm;

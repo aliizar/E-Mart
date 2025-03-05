@@ -66,7 +66,7 @@ const ProductCard = ({ product } : {product : ProductCardTypes}) => {
           />
         )}
 
-    <p className="text-green-100 mt-2 line-clamp-3">{product.price}</p>
+    <p className="text-green-100 mt-2 line-clamp-3">{`${product.price}$`}</p>
       <div className="flex justify-between gap-3 mt-2">
         <button
           ref={btnRef}

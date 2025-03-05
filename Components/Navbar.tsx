@@ -5,12 +5,15 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 
+import NextAuth from "next-auth";
+import { authOptions } from "@/auth";
 const Navbar = () => {
   const { data: session, status } = useSession();
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const signOutBtnRef = useRef<HTMLButtonElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
   
+  const User = NextAuth(authOptions);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -126,11 +129,14 @@ const Navbar = () => {
             >
               Sign Out
             </button>
+            <Link href={`/profile/${User?.id}`}>
             <img
               src={session.user?.image || ''}
               alt={session.user?.name || "User"}
               className="w-10 h-10 rounded-full border border-white"
             />
+            </Link>
+           
           </div>
         )}
         
